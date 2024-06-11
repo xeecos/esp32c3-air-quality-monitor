@@ -51,13 +51,12 @@ if (args['name'])
     ctx.moveTo(0, h/4*3);
     ctx.lineTo(w, h/4*3);
     ctx.moveTo(0, h-1);
-    ctx.lineTo(w, h-1);
-    ctx.moveTo(w/4, 0);
-    ctx.lineTo(w/4, h);
-    ctx.moveTo(w/2, 0);
-    ctx.lineTo(w/2, h);
-    ctx.moveTo(w/4*3, 0);
-    ctx.lineTo(w/4*3, h);
+    ctx.lineTo(w, h - 1);
+    for (let i = 1; i < 8; i++)
+    {
+        ctx.moveTo(w/8*i, 0);
+        ctx.lineTo(w/8*i, h-10);
+    }
     ctx.stroke();
     ctx.textAlign = "left";
     ctx.fillStyle = "rgba(32,45,67,0.4)";
@@ -66,12 +65,12 @@ if (args['name'])
     ctx.fillText(max_value/2, 2, h/2);
     ctx.fillText(max_value/4, 2, h/4*3);
     ctx.textAlign = "center";
-    let ct = time_list[(time_list.length / 2) >> 0];
-    ctx.fillText(("0" + ct.getHours()).substr(-2, 2) + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w / 2, h);
-    ct = time_list[(time_list.length / 4) >> 0];
-    ctx.fillText(("0" + ct.getHours()).substr(-2, 2) + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w / 4, h);
-    ct = time_list[(time_list.length / 4*3) >> 0];
-    ctx.fillText(("0" + ct.getHours()).substr(-2, 2) + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w / 4 * 3, h);
+    for (let i = 1; i < 8; i++)
+    {
+        let ct = time_list[(time_list.length / 8 * i) >> 0];
+        ctx.fillText(("0" + ct.getHours()).substr(-2, 2) + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w / 8 * i, h);
+    }
+
     ctx.textAlign = "right";
     ct = time_list[time_list.length - 1];
     ctx.fillText(("0" + ct.getHours()).substr(-2, 2) + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w - 1, h);
