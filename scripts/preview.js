@@ -67,11 +67,14 @@ if (args['name'])
     ctx.fillText(max_value/4, 2, h/4*3);
     ctx.textAlign = "center";
     let ct = time_list[(time_list.length / 2) >> 0];
-    ctx.fillText(ct.getHours() + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w / 2, h);
+    ctx.fillText(("0" + ct.getHours()).substr(-2, 2) + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w / 2, h);
     ct = time_list[(time_list.length / 4) >> 0];
-    ctx.fillText(ct.getHours() + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w / 4, h);
+    ctx.fillText(("0" + ct.getHours()).substr(-2, 2) + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w / 4, h);
     ct = time_list[(time_list.length / 4*3) >> 0];
-    ctx.fillText(ct.getHours() + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w / 4 * 3, h);
+    ctx.fillText(("0" + ct.getHours()).substr(-2, 2) + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w / 4 * 3, h);
+    ctx.textAlign = "right";
+    ct = time_list[time_list.length - 1];
+    ctx.fillText(("0" + ct.getHours()).substr(-2, 2) + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w - 1, h);
     ctx.textAlign = "left";
     ctx.fillStyle = "#FF0000";
     ctx.beginPath();
