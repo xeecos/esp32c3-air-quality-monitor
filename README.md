@@ -14,3 +14,5 @@ pm2 start record.js --port=COM5 --during=10
 cd scripts
 node preview.js --name=2024-6-11_08_57_19.csv
 ```
+
+![preview plot](https://github.com/xeecos/esp32c3-pm25/blob/main/assets/preview.png?raw=true)
