@@ -5,8 +5,8 @@ if (args['name'])
 {
     let str = fs.readFileSync(args['name'], { encoding: "ascii" });   
     let list = str.split("\n").slice(1);
-    let w = 1000, h = 400;
-    const WINDOW_SIZE = 100;
+    let w = 1200, h = 400;
+    const WINDOW_SIZE = args['window'] || 100;
     let canvas = new Canvas(w, h);
     let ctx = canvas.getContext("2d");
     ctx.fillStyle = "#FFFFFF";
@@ -20,6 +20,7 @@ if (args['name'])
     {
         let line = list[i];
         let split = line.split("|");
+        if (split.length < 3) continue;
         time_list.push(new Date(parseInt(split[0])));
         pm1_list.push(parseInt(split[1]));
         pm2_list.push(parseInt(split[2]));
@@ -122,7 +123,7 @@ function smooth (list, index, window_size)
     let sum = 0, count = 0;
     for (let i = index - window_size; i <= index + window_size; i++)
     {
-        if (i < 0 || i >= list.length)
+        if (i < 0 || (i > list.length-1))
         {
             continue;
         }
