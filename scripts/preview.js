@@ -36,7 +36,7 @@ if (args['name'])
             max_value = pm10_list[i];
         }
     }
-    const WINDOW_SIZE = 50;
+    const WINDOW_SIZE = 100;
     
     ctx.strokeStyle = "rgba(32,45,67,0.2)";
     ctx.beginPath();
