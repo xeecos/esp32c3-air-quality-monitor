@@ -1,10 +1,11 @@
 const fs = require("fs");
 const { SerialPort } = require('serialport');
 const args = require('minimist')(process.argv.slice(2))
-if(args['port'])
+let uart_port = args['port'] || "COM5";
+if(uart_port)
 {
-    const during = (args['during'] || 10) * 1000;
-    const port = new SerialPort({ path: args['port'], baudRate: 115200, autoOpen: false });
+    const during = (args['during'] || 5) * 1000;
+    const port = new SerialPort({ path: uart_port, baudRate: 115200, autoOpen: false });
     port.open(function (err) {
         if (err) {
             return console.log('Error opening port: ', err.message)
