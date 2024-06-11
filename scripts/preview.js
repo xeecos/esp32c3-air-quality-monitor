@@ -5,7 +5,8 @@ if (args['name'])
 {
     let str = fs.readFileSync(args['name'], { encoding: "ascii" });   
     let list = str.split("\n").slice(1);
-    let w = 500, h = 200;
+    let w = 1000, h = 400;
+    const WINDOW_SIZE = 100;
     let canvas = new Canvas(w, h);
     let ctx = canvas.getContext("2d");
     ctx.fillStyle = "#FFFFFF";
@@ -36,9 +37,9 @@ if (args['name'])
             max_value = pm10_list[i];
         }
     }
-    const WINDOW_SIZE = 100;
     
-    ctx.strokeStyle = "rgba(32,45,67,0.2)";
+    ctx.strokeStyle = "rgba(32,45,67,0.1)";
+    ctx.lineWidth = 0.4;
     ctx.beginPath();
     ctx.moveTo(0, 1);
     ctx.lineTo(w, 1);
@@ -87,30 +88,31 @@ if (args['name'])
     ctx.fill();
     ctx.fillText("PM10", 12, h - 2.5);
     ctx.strokeStyle = "#FF0000";
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, h - smooth(pm1_list, 0, WINDOW_SIZE) / max_value * h);
-    for (let i = 1; i < pm1_list.length; i++)
+    for (let i = 1, len = pm1_list.length-1; i < pm1_list.length; i++)
     {
         let v = smooth(pm1_list, i, WINDOW_SIZE);
-        ctx.lineTo(i * w / pm1_list.length, h - v / max_value * h);
+        ctx.lineTo(i / len * w, h - v / max_value * h);
     }
     ctx.stroke();
     ctx.strokeStyle = "#00FF00";
     ctx.beginPath();
     ctx.moveTo(0, h - smooth(pm2_list, 0, WINDOW_SIZE) / max_value * h);
-    for (let i = 1; i < pm2_list.length; i++)
+    for (let i = 1, len = pm2_list.length-1; i < pm2_list.length; i++)
     {
         let v = smooth(pm2_list, i, WINDOW_SIZE);
-        ctx.lineTo(i * w / pm2_list.length, h - v / max_value * h);
+        ctx.lineTo(i / len * w, h - v / max_value * h);
     }
     ctx.stroke();
     ctx.strokeStyle = "#0000FF";
     ctx.beginPath();
     ctx.moveTo(0, h - smooth(pm10_list, 0, WINDOW_SIZE) / max_value * h);
-    for (let i = 1; i < pm10_list.length; i++)
+    for (let i = 1, len = pm10_list.length-1; i < pm10_list.length; i++)
     {
         let v = smooth(pm10_list, i, WINDOW_SIZE);
-        ctx.lineTo(i * w / pm10_list.length, h - v / max_value * h);
+        ctx.lineTo(i / len * w, h - v / max_value * h);
     }
     ctx.stroke();
     canvas.saveAsSync("preview.png");
