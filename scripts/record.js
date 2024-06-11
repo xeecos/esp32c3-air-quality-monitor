@@ -12,9 +12,9 @@ if(args['port'])
     })
     let buf = "";
     let time = 0;
-    let fileName = args['name'] || new Date().toLocaleString().split("/").join("-").split(" ").join("_");
+    let fileName = args['name'] || new Date().toLocaleString().split("/").join("-").split(" ").join("_").split(":").join("_");
     console.log("recording:",fileName);
-    fs.appendFileSync(`${fileName}.csv`,`time|pm1.0|pm2.5|pm10\n`);
+    fs.writeFileSync(`${fileName}.csv`,`time|pm1.0|pm2.5|pm10\n`);
     port.on('data', function (data) {
         buf += data.toString();
         if(buf.indexOf('\n') != -1)
