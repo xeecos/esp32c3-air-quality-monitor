@@ -1,18 +1,35 @@
 #include <Arduino.h>
 #include "config.h"
 #include <HardwareSerial.h>
+#include <SGP40.h>
+#include <Wire.h>
+#include <AHTxx.h> 
+
 // #include <WiFi.h>
 
 // const char *ssid = "makeblock.cc";
 // const char *password = "hulurobot";
 
 // WiFiServer server(80);
-HardwareSerial uart(1);
+SGP40 sgp;
+float ahtValue;                               //to store T/RH result
+AHTxx aht21(AHTXX_ADDRESS_X38, AHT2x_SENSOR); //sensor address, sensor type
+HardwareSerial uart(0);
 void setup()
 {
     USBSerial.begin(115200);
-    uart.begin(9600, SERIAL_8N1, PIN_SDA, PIN_SCL);
+    uart.begin(9600, SERIAL_8N1);
     pinMode(PIN_LED, OUTPUT);
+    while(sgp.begin(/*duration = */10000) !=true){
+        USBSerial.println("Sensor not found :(");
+        delay(1000);
+    }
+    while (aht21.begin() != true)
+    {
+        delay(1000);
+    } 
+    
+    USBSerial.println("Sensor start!");
     // USBSerial.println();
     // USBSerial.println();
     // USBSerial.print("Connecting to ");
@@ -42,6 +59,38 @@ uint8_t buf[32];
 void parseBuf();
 void loop()
 {
+    digitalWrite(PIN_LED,LOW);
+    delay(1000);
+    digitalWrite(PIN_LED,HIGH);
+    delay(1000);
+    uint16_t voc;
+    voc = sgp.getVoclndex();
+    USBSerial.printf("Measurement: %d\n", voc);
+
+    ahtValue = aht21.readTemperature(); //read 6-bytes via I2C, takes 80 milliseconds
+
+    
+    if (ahtValue != AHTXX_ERROR) //AHTXX_ERROR = 255, library returns 255 if error occurs
+    {
+        USBSerial.printf("Temperature: %f\n", ahtValue);
+    }
+    else
+    {
+
+        if   (aht21.softReset() == true) USBSerial.println(F("reset success")); //as the last chance to make it alive
+        else                             USBSerial.println(F("reset failed"));
+    }
+
+    ahtValue = aht21.readHumidity(); //read another 6-bytes via I2C, takes 80 milliseconds
+
+    
+    if (ahtValue != AHTXX_ERROR) //AHTXX_ERROR = 255, library returns 255 if error occurs
+    {
+        USBSerial.printf("Humidity: %f\n",ahtValue);
+    }
+    else
+    {
+    }
     while(uart.available())
     {
         char c = uart.read();
