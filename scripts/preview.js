@@ -1,41 +1,45 @@
 const fs = require("fs");
 const { Canvas } = require("skia-canvas");
-const args = require('minimist')(process.argv.slice(2))
+const args = require('minimist')(process.argv.slice(2));
+
+let w = 1200, h = 400;
+
 if (args['name'])
 {
     let str = fs.readFileSync(args['name'], { encoding: "ascii" });   
     let list = str.split("\n").slice(1);
-    let w = 1200, h = 400;
-    const WINDOW_SIZE = args['window'] || 100;
     let canvas = new Canvas(w, h);
+    render(canvas, [{ name: "PM1", index: 1,color:"#FF0000" }, { name: "PM2.5", index: 2,color:"#00FF00" }, { name: "PM10", index: 3,color:"#0000FF" }], list, "pm.png");
+    render(canvas, [{ name: "Voc", index: 4,color:"#FF0000" }, { name: "Temp", index: 5,color:"#00FF00" }, { name: "Humidity", index: 6,color:"#0000FF" }], list, "voc.png");
+}
+function render (canvas,labels,list,saveName)
+{
+        
+    const WINDOW_SIZE = args['window'] || 100;
     let ctx = canvas.getContext("2d");
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, w, h);
-    let time_list = [];
-    let pm1_list = [];
-    let pm2_list = [];
-    let pm10_list = [];
     let max_value = 0;
+    let time_list = [];
+    let data_list = [];
+    for (let i = 0; i < labels.length; i++)
+    {
+        data_list.push([]);
+    }
     for (let i = 0; i < list.length; i++)
     {
         let line = list[i];
         let split = line.split("|");
         if (split.length < 3) continue;
         time_list.push(new Date(parseInt(split[0])));
-        pm1_list.push(parseInt(split[1]));
-        pm2_list.push(parseInt(split[2]));
-        pm10_list.push(parseInt(split[3]));
-        if (max_value < pm1_list[i])
+        for (let j = 0; j < labels.length; j++)
         {
-            max_value = pm1_list[i];
-        }
-        if (max_value < pm2_list[i])
-        {
-            max_value = pm2_list[i];
-        }
-        if (max_value < pm10_list[i])
-        {
-            max_value = pm10_list[i];
+            let v = parseFloat(split[labels[j].index]);
+            data_list[j].push(v);
+            if (max_value < v)
+            {
+                max_value = v;
+            }
         }
     }
     
@@ -70,55 +74,30 @@ if (args['name'])
         let ct = time_list[(time_list.length / 8 * i) >> 0];
         ctx.fillText(("0" + ct.getHours()).substr(-2, 2) + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w / 8 * i, h);
     }
-
     ctx.textAlign = "right";
     ct = time_list[time_list.length - 1];
     ctx.fillText(("0" + ct.getHours()).substr(-2, 2) + ":" + ("0" + ct.getMinutes()).substr(-2, 2), w - 1, h);
+
     ctx.textAlign = "left";
-    ctx.fillStyle = "#FF0000";
-    ctx.beginPath();
-    ctx.arc(6, h - 26, 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillText("PM1.0", 12, h - 22.5);
-    ctx.fillStyle = "#00FF00";
-    ctx.beginPath();
-    ctx.arc(6, h - 16, 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillText("PM2.5", 12, h - 12.5);
-    ctx.fillStyle = "#0000FF";
-    ctx.beginPath();
-    ctx.arc(6, h - 6, 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillText("PM10", 12, h - 2.5);
-    ctx.strokeStyle = "#FF0000";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, h - smooth(pm1_list, 0, WINDOW_SIZE) / max_value * h);
-    for (let i = 1, len = pm1_list.length-1; i < pm1_list.length; i++)
+    for(let n = 0;n<labels.length;n++)
     {
-        let v = smooth(pm1_list, i, WINDOW_SIZE);
-        ctx.lineTo(i / len * w, h - v / max_value * h);
+        ctx.fillStyle = labels[n].color;
+        ctx.beginPath();
+        ctx.arc(6, h - 26 + n*10, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillText(labels[n].name, 12, h - 22.0 + n*10);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = labels[n].color;
+        ctx.beginPath();
+        ctx.moveTo(0, h - smooth(data_list[n], 0, WINDOW_SIZE) / max_value * h);
+        for (let i = 1, len = data_list[n].length-1; i < data_list[n].length; i++)
+        {
+            let v = smooth(data_list[n], i, WINDOW_SIZE);
+            ctx.lineTo(i / len * w, h - v / max_value * h);
+        }
+        ctx.stroke();
     }
-    ctx.stroke();
-    ctx.strokeStyle = "#00FF00";
-    ctx.beginPath();
-    ctx.moveTo(0, h - smooth(pm2_list, 0, WINDOW_SIZE) / max_value * h);
-    for (let i = 1, len = pm2_list.length-1; i < pm2_list.length; i++)
-    {
-        let v = smooth(pm2_list, i, WINDOW_SIZE);
-        ctx.lineTo(i / len * w, h - v / max_value * h);
-    }
-    ctx.stroke();
-    ctx.strokeStyle = "#0000FF";
-    ctx.beginPath();
-    ctx.moveTo(0, h - smooth(pm10_list, 0, WINDOW_SIZE) / max_value * h);
-    for (let i = 1, len = pm10_list.length-1; i < pm10_list.length; i++)
-    {
-        let v = smooth(pm10_list, i, WINDOW_SIZE);
-        ctx.lineTo(i / len * w, h - v / max_value * h);
-    }
-    ctx.stroke();
-    canvas.saveAsSync("preview.png");
+    canvas.saveAsSync(saveName);
 }
 function smooth (list, index, window_size)
 {

@@ -11,8 +11,7 @@
 // const char *password = "hulurobot";
 
 // WiFiServer server(80);
-SGP40 sgp;
-float ahtValue;                               //to store T/RH result
+SGP40 sgp;                          //to store T/RH result
 AHTxx aht21(AHTXX_ADDRESS_X38, AHT2x_SENSOR); //sensor address, sensor type
 HardwareSerial uart(0);
 void setup()
@@ -56,41 +55,29 @@ int prevC = 0;
 bool startFrame = false;
 int i = 0;
 uint8_t buf[32];
-void parseBuf();
+void parseBuf(int voc,float tempValue,float humValue);
 void loop()
 {
     digitalWrite(PIN_LED,LOW);
-    delay(1000);
+    delay(500);
     digitalWrite(PIN_LED,HIGH);
-    delay(1000);
+    delay(500);
     uint16_t voc;
     voc = sgp.getVoclndex();
-    USBSerial.printf("Measurement: %d\n", voc);
 
-    ahtValue = aht21.readTemperature(); //read 6-bytes via I2C, takes 80 milliseconds
-
+    float tempValue = aht21.readTemperature(); //read 6-bytes via I2C, takes 80 milliseconds
     
-    if (ahtValue != AHTXX_ERROR) //AHTXX_ERROR = 255, library returns 255 if error occurs
+    if (tempValue != AHTXX_ERROR) //AHTXX_ERROR = 255, library returns 255 if error occurs
     {
-        USBSerial.printf("Temperature: %f\n", ahtValue);
     }
     else
     {
-
-        if   (aht21.softReset() == true) USBSerial.println(F("reset success")); //as the last chance to make it alive
-        else                             USBSerial.println(F("reset failed"));
+        aht21.softReset();
     }
 
-    ahtValue = aht21.readHumidity(); //read another 6-bytes via I2C, takes 80 milliseconds
+    float humValue = aht21.readHumidity(); //read another 6-bytes via I2C, takes 80 milliseconds
 
     
-    if (ahtValue != AHTXX_ERROR) //AHTXX_ERROR = 255, library returns 255 if error occurs
-    {
-        USBSerial.printf("Humidity: %f\n",ahtValue);
-    }
-    else
-    {
-    }
     while(uart.available())
     {
         char c = uart.read();
@@ -105,7 +92,7 @@ void loop()
             i++;
             if(i==30)
             {
-                parseBuf();
+                parseBuf(voc,tempValue,humValue);
             }
         }
         prevC = c;
@@ -170,12 +157,12 @@ void loop()
     //     USBSerial.println("Client Disconnected.");
     // }
 }
-void parseBuf()
+void parseBuf(int voc,float tempValue,float humValue)
 {
     int pm1 = (buf[2]<<8)+buf[3];
     int pm25 = (buf[4]<<8)+buf[5];
     int pm10 = (buf[6]<<8)+buf[7];
-    USBSerial.printf("pm1.0:%d pm2.5:%d pm10:%d\n",pm1, pm25, pm10);
+    USBSerial.printf("%d %d %d %d %.1f %.1f\n",pm1, pm25, pm10, voc, tempValue, humValue);
 
     // int um3 = (buf[14]<<8)+buf[15];
     // int um5 = (buf[16]<<8)+buf[17];
