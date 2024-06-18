@@ -15,7 +15,7 @@ if (args['name'])
 function render (canvas,labels,list,saveName)
 {
         
-    const WINDOW_SIZE = args['window'] || 100;
+    const WINDOW_SIZE = (args['window'] || 100)/(saveName=="pm.png"?1:10);
     let ctx = canvas.getContext("2d");
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, w, h);
