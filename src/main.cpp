@@ -76,8 +76,9 @@ void loop()
     }
 
     float humValue = aht21.readHumidity(); //read another 6-bytes via I2C, takes 80 milliseconds
-
     
+    sgp.setRhT(humValue, tempValue);
+
     while(uart.available())
     {
         char c = uart.read();
