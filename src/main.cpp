@@ -1,5 +1,8 @@
 #include <Arduino.h>
 #include "config.h"
+#include "FS.h"
+#include "SD.h"
+#include "SPI.h"
 #include <HardwareSerial.h>
 #include <SGP40.h>
 #include <Wire.h>
@@ -50,6 +53,33 @@ void setup()
     // USBSerial.println(WiFi.localIP());
 
     // server.begin();
+     SPIClass spi(FSPI);
+    spi.begin(PIN_SCK, PIN_MISO, PIN_MOSI, PIN_CS);
+    if (!SD.begin(PIN_CS, spi, 20000000))
+    {
+        USBSerial.println("Card Mount Failed");
+        return;
+    }
+    uint8_t cardType = SD.cardType();
+
+    if(cardType == CARD_NONE){
+        USBSerial.println("No SD card attached");
+        return;
+    }
+
+    USBSerial.print("SD Card Type: ");
+    if(cardType == CARD_MMC){
+        USBSerial.println("MMC");
+    } else if(cardType == CARD_SD){
+        USBSerial.println("SDSC");
+    } else if(cardType == CARD_SDHC){
+        USBSerial.println("SDHC");
+    } else {
+        USBSerial.println("UNKNOWN");
+    }
+
+    uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+    USBSerial.printf("SD Card Size: %lluMB\n", cardSize);
 }
 int prevC = 0;
 bool startFrame = false;
